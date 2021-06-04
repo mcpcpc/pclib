@@ -49,7 +49,7 @@ double stdDev(size_t m, size_t n, double mat[][n], size_t d, double xBar) {
 
 double matrixCovariance(struct Matrix *mat, size_t x, size_t y) {
 	double sum = 0;
-	double meanx = matrixMean(&mat, x);
+	double meanX = matrixMean(&mat, x);
 	double meanY = matrixMean(&mat, y);
 	for (size_t i = 0; i < mat->m; i++) {
 		sum += (mat->v[i][x] - meanX) * (mat->v[i][y] - meanY);
