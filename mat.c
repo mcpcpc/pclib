@@ -10,7 +10,7 @@ struct Matrix {
 
 /* computed matrix mean along dimension d */
 //double matrixMean(struct Matrix *mat, size_t d) {
-double matrixMean(struct Matrix **mat, size_t d) {
+double matrixMean(struct Matrix *mat, size_t d) {
 	double sum = 0;
 	for (size_t i = 0; i < mat->m; i++) {
 		sum += mat->v[i][d];
