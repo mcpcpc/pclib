@@ -31,7 +31,7 @@ double mean(size_t m, size_t n, double mat[][n], size_t d) {
 /* computed matrix standard devition along dimension d */
 double matrixStdDev(struct Matrix *mat, size_t d) {
 	double sum = 0;
-	double barX = matrixMean(&mat, d);
+	double barX = matrixMean(mat, d);
 	for (size_t i = 0; i < mat->m; i++) {
 		sum += pow(mat->v[i][d] - barX, 2);
 	}
@@ -50,8 +50,8 @@ double stdDev(size_t m, size_t n, double mat[][n], size_t d, double xBar) {
 
 double matrixCovariance(struct Matrix *mat, size_t x, size_t y) {
 	double sum = 0;
-	double meanX = matrixMean(&mat, x);
-	double meanY = matrixMean(&mat, y);
+	double meanX = matrixMean(mat, x);
+	double meanY = matrixMean(mat, y);
 	for (size_t i = 0; i < mat->m; i++) {
 		sum += (mat->v[i][x] - meanX) * (mat->v[i][y] - meanY);
 	}
@@ -102,7 +102,7 @@ void normalMatrix(struct Matrix *mat, struct Matrix *dest) {
 	double stdDCol = 0;
 	for (size_t x = 0; x < mat->m; x++) {
 		for (size_t y = 0; y < mat->n; y++) {
-			meanCol = matrixMean(&mat, y);
+			meanCol = matrixMean(mat, y);
 			stdDCol = matrixStdDev(&mat, y);
 			dest->v[x][y] = (mat->v[x][y] - meanCol) / stdDCol;
 		}
