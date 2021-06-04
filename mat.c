@@ -73,7 +73,7 @@ double covariance(size_t m, size_t n, double mat[][n], size_t x, size_t y) {
 void covarianceMatrix1(struct Matrix *mat, struct Matrix *dest) {
 	for (size_t x = 0; x < mat->n; x++) {
 		for (size_t y = x; y < mat->n; y++) {
-			dest->v[x][y] = matrixCovariance(&mat, x, y);
+			dest->v[x][y] = matrixCovariance(mat, x, y);
 			dest->v[y][x] = dest->v[x][y];
 		}
 	}
@@ -103,7 +103,7 @@ void normalMatrix(struct Matrix *mat, struct Matrix *dest) {
 	for (size_t x = 0; x < mat->m; x++) {
 		for (size_t y = 0; y < mat->n; y++) {
 			meanCol = matrixMean(mat, y);
-			stdDCol = matrixStdDev(&mat, y);
+			stdDCol = matrixStdDev(mat, y);
 			dest->v[x][y] = (mat->v[x][y] - meanCol) / stdDCol;
 		}
 	}
