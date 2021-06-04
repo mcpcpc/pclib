@@ -88,6 +88,15 @@ void covarianceMatrix(size_t m, size_t n, double src[][n], double dest[][n]) {
 	}
 }
 
+void printMatrix(struct Matrix *mat) {
+	for (size_t i = 0; i < mat->m; i++) {
+		for (size_t j = 0; j < mat->n; j++) {
+			printf("\t%f", mat->v[i][j]);
+		}
+		puts("\n");
+	}
+}
+
 void printMat(size_t m, size_t n, double mat[][n]) {
 	for (size_t i = 0; i < m; i++) {
 		for (size_t j = 0; j < n; j++) {
@@ -122,6 +131,7 @@ void standardMatrix(size_t m, size_t n, double src[][n], double dest[][n]) {
 }
 
 int main() {
+	// old
 	size_t dims[2] = {5, 4};
 	double src[5][4] = {{1,2,3,4},{5,5,6,7},{1,4,2,3},{5,3,2,1},{8,1,2,2}};
 	double std[dims[0]][dims[1]];
@@ -131,5 +141,6 @@ int main() {
 	covarianceMatrix(dims[0], dims[1], std, dest);
 	puts("covariance matrix:");
 	printMat(newDim, newDim, dest);
-
+	// new
+	
 }
