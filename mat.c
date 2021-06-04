@@ -6,7 +6,7 @@ struct Matrix {
 	int m; // matrix number of rows
 	int n; // matric number of columns
 	double **v; // matrix values
-}
+};
 
 /* computed matrix mean along dimension d */
 double matrixMean(struct Matrix *mat, size_t d) {
