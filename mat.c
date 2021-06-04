@@ -3,12 +3,12 @@
 #include <stdio.h>
 
 struct Matrix {
-	int m; \\ matrix number of rows
-	int n; \\ matric number of columns
-	double **v; \\ matrix values
+	int m; // matrix number of rows
+	int n; // matric number of columns
+	double **v; // matrix values
 }
 
-\* computed matrix mean along dimension d *\
+/* computed matrix mean along dimension d */
 double matrixMean(struct Matrix *mat, size_t d) {
 	double sum = 0;
 	for (size_t i = 0; i < mat->m; i++) {
@@ -27,7 +27,7 @@ double mean(size_t m, size_t n, double mat[][n], size_t d) {
 	return xBar;
 }
 
-\* computed matrix standard devition along dimension d *\
+/* computed matrix standard devition along dimension d */
 double matrixStdDev(struct Matrix *mat, size_t d) {
 	double sum = 0;
 	double barX = matrixMean(&mat, d);
