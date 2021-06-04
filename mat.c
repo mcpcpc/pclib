@@ -142,5 +142,8 @@ int main() {
 	puts("covariance matrix:");
 	printMat(newDim, newDim, dest);
 	// new
-	
+	struct Matrix mat;
+	mat.m = 5;
+	mat.n = 4;
+	mat.v = {{1,2,3,4},{5,5,6,7},{1,4,2,3},{5,3,2,1},{8,1,2,2}};
 }
