@@ -2,23 +2,6 @@
 #include <math.h>
 #include <stdio.h>
 
-struct Matrix {
-	size_t m; // matrix number of rows
-	size_t n; // matric number of columns
-	double **v; // matrix values
-};
-
-/* computed matrix mean along dimension d */
-//double matrixMean(struct Matrix *mat, size_t d) {
-double matrixMean(struct Matrix *mat, size_t d) {
-	double sum = 0;
-	for (size_t i = 0; i < mat->m; i++) {
-		sum += mat->v[i][d];
-	}
-	double xBar = sum / mat->m;
-	return xBar;
-}
-
 double mean(size_t m, size_t n, double mat[][n], size_t d) {
 	double sum = 0;
 	for (size_t i = 0; i < m; i++) {
@@ -28,19 +11,9 @@ double mean(size_t m, size_t n, double mat[][n], size_t d) {
 	return xBar;
 }
 
-/* computed matrix standard devition along dimension d */
-double matrixStdDev(struct Matrix *mat, size_t d) {
+double stdDev(size_t m, size_t n, double mat[][n], size_t d) {
 	double sum = 0;
-	double barX = matrixMean(mat, d);
-	for (size_t i = 0; i < mat->m; i++) {
-		sum += pow(mat->v[i][d] - barX, 2);
-	}
-	double sd = sqrt(sum / (mat->m - 1));
-	return sd;
-}
-
-double stdDev(size_t m, size_t n, double mat[][n], size_t d, double xBar) {
-	double sum = 0;
+	double xBar = mean(m, n, mat, d);
 	for (size_t i = 0; i < m; i++) {
 		sum += pow(mat[i][d] - xBar, 2);
 	}
@@ -48,16 +21,6 @@ double stdDev(size_t m, size_t n, double mat[][n], size_t d, double xBar) {
 	return sd;
 }
 
-double matrixCovariance(struct Matrix *mat, size_t x, size_t y) {
-	double sum = 0;
-	double meanX = matrixMean(mat, x);
-	double meanY = matrixMean(mat, y);
-	for (size_t i = 0; i < mat->m; i++) {
-		sum += (mat->v[i][x] - meanX) * (mat->v[i][y] - meanY);
-	}
-	double cov = sum / mat->m;
-	return cov;
-}
 
 double covariance(size_t m, size_t n, double mat[][n], size_t x, size_t y) {
 	double sum = 0;
@@ -70,30 +33,12 @@ double covariance(size_t m, size_t n, double mat[][n], size_t x, size_t y) {
 	return cov;
 }
 
-void covarianceMatrix1(struct Matrix *mat, struct Matrix *dest) {
-	for (size_t x = 0; x < mat->n; x++) {
-		for (size_t y = x; y < mat->n; y++) {
-			dest->v[x][y] = matrixCovariance(mat, x, y);
-			dest->v[y][x] = dest->v[x][y];
-		}
-	}
-}
-
 void covarianceMatrix(size_t m, size_t n, double src[][n], double dest[][n]) {
 	for (size_t x = 0; x < n; x++) {
 		for (size_t y = x; y < n; y++) {
 			dest[x][y] = covariance(m, n, src, x, y);
 			dest[y][x] = dest[x][y];
 		}
-	}
-}
-
-void printMatrix(struct Matrix *mat) {
-	for (size_t i = 0; i < mat->m; i++) {
-		for (size_t j = 0; j < mat->n; j++) {
-			printf("\t%f", mat->v[i][j]);
-		}
-		puts("\n");
 	}
 }
 
@@ -106,32 +51,33 @@ void printMat(size_t m, size_t n, double mat[][n]) {
 	}
 }
 
-void normalMatrix(struct Matrix *mat, struct Matrix *dest) {
-	double meanCol = 0;
-	double stdDCol = 0;
-	for (size_t x = 0; x < mat->m; x++) {
-		for (size_t y = 0; y < mat->n; y++) {
-			meanCol = matrixMean(mat, y);
-			stdDCol = matrixStdDev(mat, y);
-			dest->v[x][y] = (mat->v[x][y] - meanCol) / stdDCol;
-		}
-	}
-}
-
 void standardMatrix(size_t m, size_t n, double src[][n], double dest[][n]) {
 	double meanCol = 0;
 	double stdDCol = 0;
 	for (size_t x = 0; x < m; x++) {
 		for (size_t y = 0; y < n; y++) {
 			meanCol = mean(m, n, src, y);
-			stdDCol = stdDev(m, n, src, y, meanCol);
+			stdDCol = stdDev(m, n, src, y);
 			dest[x][y] = (src[x][y] - meanCol) / stdDCol;
 		}
 	}
 }
+/*
+void copyMatrixCol(size_t, size_m, size_t n, double src[][n], double dest[], size_t i) {
 
+}
+
+void qrDecompose(size_t m, size_t n, double src[][n], double dest[][n]) {
+	 double T[m];
+	 double S[m];
+	 for (size_t y = 0; y < n; y++) {
+		for (size_t x = 0; x < y; x++) {
+		}
+	 }
+}
+*/
 int main() {
-	// old
+	// assumption is that cols (n) is less than rows (m)
 	size_t dims[2] = {5, 4};
 	double src[5][4] = {{1,2,3,4},{5,5,6,7},{1,4,2,3},{5,3,2,1},{8,1,2,2}};
 	double std[dims[0]][dims[1]];
@@ -141,9 +87,6 @@ int main() {
 	covarianceMatrix(dims[0], dims[1], std, dest);
 	puts("covariance matrix:");
 	printMat(newDim, newDim, dest);
-	// new
-	struct Matrix mat;
-	mat.m = 5;
-	mat.n = 4;
-	mat.v = src;
+	puts("QR algorithm:");
+
 }
