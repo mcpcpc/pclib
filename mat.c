@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 struct Matrix {
-	int m; // matrix number of rows
-	int n; // matric number of columns
+	size_t m; // matrix number of rows
+	size_t n; // matric number of columns
 	double **v; // matrix values
 };
 
