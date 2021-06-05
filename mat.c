@@ -3,7 +3,8 @@
 #include <math.h>
 
 typedef struct {
-	int m, n;
+	int m;
+	int n;
 	double ** v;
 } mat_t, *mat;
 
@@ -23,6 +24,61 @@ void matrixDelete(mat m) {
 	free(m->v[0]);
 	free(m->v);
 	free(m);
+}
+
+double matrixMean(mat m, int dim) {
+	double sum = 0;
+	for (int i = 0; i < m->m; i++) {
+		sum += m->v[i][dim];
+	}
+	double x = sum / m->m;
+	return x;
+}
+
+double matrixStdDevP(mat m, int dim) {
+	double sum = 0;
+	double mean = matrixMean(m, dim);
+	for (int i = 0; i < m->m; i++) {
+		sum += pow(m->v[i][dim] - mean, 2);
+	}
+	double sd = sqrt(sum / (m->m - 1));
+	return sd;
+}
+
+mat matrixStandardize(mat x) {
+	mat m = matrixAdd(x->m, x->n);
+	double mean = 0;
+	double sdev = 0;
+	for (int i = 0; i < m->m; i++) {
+		for (int j = 0; j < m->n; j++) {
+			mean = matrixMean(x, j);
+			sdev = matrixStdDevP(x, j);
+			m->v[i][j] = (x->v[i][j] - mean) / sdev;
+		}
+	}
+	return m;
+}
+
+double matrixCovariance(mat m, int x, int y) {
+	double sum = 0;
+	double meanX = matrixMean(m, x);
+	double meanY = matrixMean(m, y);
+	for (int i = 0; i < m->m; i++) {
+		sum += (m->v[i][x] - meanX) * (m->v[i][y] - meanY);
+	}
+	double cov = sum / m->m;
+	return cov;
+}
+
+mat covarianceMatrix(mat x) {
+	mat m = matrixAdd(x->m, x->n);
+	for (int i = 0; i < m->n; i++) {
+		for (int j = i; j < m->n; j++) {
+			m->v[i][j] = matrixCovariance(x, i, j);
+			m->v[j][i] = m->v[i][j];
+		}
+	}
+	return m;
 }
 
 void matrixTranspose(mat m) {
@@ -182,6 +238,19 @@ double in[][3] = {
 };
 
 int main() {
+	/* covariance matrix */
+	mat a = matrixCopy(3, in, 5);
+	puts("IN");
+	matrixPrint(a);
+	mat b = matrixStandardize(a);
+	mat c = covarianceMatrix(b);
+	puts("COV. MATRIX");
+	matrixPrint(c);
+	matrixDelete(a);
+	matrixDelete(b);
+	matrixDelete(c);
+
+	/* QR decompose */
 	mat R, Q;
 	mat x = matrixCopy(3, in, 5);
 	householderTransform(x, &R, &Q);
