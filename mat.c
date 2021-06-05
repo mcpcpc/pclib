@@ -1,92 +1,198 @@
-#include <unistd.h>
-#include <math.h>
 #include <stdio.h>
-
-double mean(size_t m, size_t n, double mat[][n], size_t d) {
-	double sum = 0;
+#include <stdlib.h>
+#include <math.h>
+ 
+typedef struct {
+	size_t m
+	size_t n;
+	double **v;
+} matrix_t, *matrix;
+ 
+matrix matrixAdd(size_t m, size_t n) {
+	matrix mat = malloc(sizeof(matrix_t));
+	mat->v = malloc(sizeof(double*) * m);
+	mat->v[0] = calloc(sizeof(double), m * n);
 	for (size_t i = 0; i < m; i++) {
-		sum += mat[i][d];
+		mat->v[i] = mat->v[0] + n * i;
 	}
-	double xBar = sum / m;
-	return xBar;
+	mat->m = m;
+	mat->n = n;
+	return mat;
 }
 
-double stdDev(size_t m, size_t n, double mat[][n], size_t d) {
-	double sum = 0;
-	double xBar = mean(m, n, mat, d);
-	for (size_t i = 0; i < m; i++) {
-		sum += pow(mat[i][d] - xBar, 2);
-	}
-	double sd = sqrt(sum / (m - 1));
-	return sd;
+void matrixDelete(matrix mat) {
+	free(mat->v[0]);
+	free(mat->v);
+	free(mat);
 }
 
-
-double covariance(size_t m, size_t n, double mat[][n], size_t x, size_t y) {
-	double sum = 0;
-	double meanX = mean(m, n, mat, x);
-	double meanY = mean(m, n, mat, y);
-	for (size_t i = 0; i < m; i++) {
-		sum += (mat[i][x] - meanX) * (mat[i][y] - meanY);
-	}
-	double cov = sum / m;
-	return cov;
-}
-
-void covarianceMatrix(size_t m, size_t n, double src[][n], double dest[][n]) {
-	for (size_t x = 0; x < n; x++) {
-		for (size_t y = x; y < n; y++) {
-			dest[x][y] = covariance(m, n, src, x, y);
-			dest[y][x] = dest[x][y];
+void matrixTranspose(matrix mat) {
+	for (size_t i = 0; i < mat->m; i++) {
+		for (size_t j = 0; j < i; j++) {
+			double t = mat->v[i][j];
+			mat->v[i][j] = mat->v[j][i];
+			mat->v[j][i] = t;
 		}
 	}
 }
 
-void printMat(size_t m, size_t n, double mat[][n]) {
+matrix matrixCopy(size_t m, size_t n, double a[][n]) {
+	matrix ret = matrixNew(m, n);
 	for (size_t i = 0; i < m; i++) {
 		for (size_t j = 0; j < n; j++) {
-			printf("\t%f", mat[i][j]);
-		}
-		puts("\n");
-	}
-}
-
-void standardMatrix(size_t m, size_t n, double src[][n], double dest[][n]) {
-	double meanCol = 0;
-	double stdDCol = 0;
-	for (size_t x = 0; x < m; x++) {
-		for (size_t y = 0; y < n; y++) {
-			meanCol = mean(m, n, src, y);
-			stdDCol = stdDev(m, n, src, y);
-			dest[x][y] = (src[x][y] - meanCol) / stdDCol;
+			ret->v[i][j] = a[i][j];
 		}
 	}
-}
-/*
-void copyMatrixCol(size_t, size_m, size_t n, double src[][n], double dest[], size_t i) {
-
+	return ret;
 }
 
-void qrDecompose(size_t m, size_t n, double src[][n], double dest[][n]) {
-	 double T[m];
-	 double S[m];
-	 for (size_t y = 0; y < n; y++) {
-		for (size_t x = 0; x < y; x++) {
+matrix matrixMultiply(matrix mat1, matrix mat2) {
+	if (mat1->n != mat2->m) {
+		return 0;
+	}
+	matrix ret = matrixNew(mat1->m, mat2->n);
+	for (size_t i = 0; i < mat1->m; i++)
+		for (size_t j = 0; j < mat2->n; j++)
+			for (size_t k = 0; k < mat1->n; k++)
+				ret->v[i][j] += mat1->v[i][k] * mat2->v[k][j];
+	return ret;
+}
+
+matrix matrixMinor(matrix mat, size_t d) {
+	matrix ret = matrixNew(mat->m, mat->n);
+	for (size_t i = 0; i < d; i++) {
+		ret->v[i][i] = 1;
+	}
+	for (size_t i = d; i < mat->m; i++) {
+		for (size_t j = d; j < mat->n; j++) {
+			ret->v[i][j] = mat->v[i][j];
+	}
+	return ret;
+}
+
+/* c = a + b * s */
+double *vmadd(double a[], double b[], double s, double c[], size_t n) {
+	for (size_t i = 0; i < n; i++)
+		c[i] = a[i] + s * b[i];
+	return c;
+}
+
+/* m = I - v v^T */
+matrix vmul(double v[], size_t n)
+{
+	matrix x = matrix_new(n, n);
+	for (size_t i = 0; i < n; i++) {
+		for (size_t j = 0; j < n; j++) {
+			x->v[i][j] = -2 *  v[i] * v[j];
 		}
-	 }
+	}
+	for (size_t i = 0; i < n; i++) {
+		x->v[i][i] += 1;
+	}
+	return x;
 }
-*/
+
+/* ||x|| */
+double vnorm(double x[], size_t n) {
+	double sum = 0;
+	for (size_t i = 0; i < n; i++) {
+		sum += x[i] * x[i];
+	}
+	return sqrt(sum);
+}
+
+double* vdiv(double x[], double d, double y[], size_t n) {
+	for (size_t i = 0; i < n; i++) {
+		y[i] = x[i] / d;
+	}
+	return y;
+}
+
+/* take c-th column of mat, put in v */
+double* mcol(matrix mat, double *v, int c) {
+	for (size_t i = 0; i < mat->m; i++)
+		v[i] = mat->v[i][c];
+	return v;
+}
+
+void matrixPrint(matrix m) {
+	for(size_t i = 0; i < mat->m; i++) {
+		for (size_t j = 0; j < mat->n; j++) {
+			printf(" %8.3f", mat->v[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+void householderTranform(matrix mat, matrix *R, matrix *Q) {
+	matrix q[mat->m];
+	matrix z = mat, z1;
+	for (size_t k = 0; (k < mat->n) && k < (mat->m - 1); k++) {
+		double e[mat->m], x[mat->m], a;
+		z1 = matrixMinor(z, k);
+		if (z != mat) {
+			matrixDelete(z);
+		}
+		z = z1;
+		mcol(z, x, k);
+		a = vnorm(x, mat->m);
+		if (mat->v[k][k] > 0) {
+			a = -a;
+ 		}
+		for (size_t i = 0; i < mat->m; i++) {
+			e[i] = (i == k) ? 1 : 0;
+ 		}
+		vmadd(x, e, a, e, mat->m);
+		vdiv(e, vnorm(e, mat->m), e, mat->m);
+		q[k] = vmul(e, mat->m);
+		z1 = matrixMultiply(q[k], z);
+		if (z != mat) {
+			matrixDelete(z);
+		}
+		z = z1;
+	}
+	matrixDelete(z);
+	*Q = q[0];
+	*R = matrixMultiply(q[0], mat);
+	for (size_t i = 1; i < mat->n && i < mat->m - 1; i++) {
+		z1 = matrixMultiply(q[i], *Q);
+		if (i > 1) {
+			matrixDelete(*Q);
+		}
+		*Q = z1;
+		matrixDelete(q[i]);
+	}
+	matrixDelete(q[0]);
+	z = matrixMultiply(*Q, mat);
+	matrixDelete(*R);
+	*R = z;
+	matrixTranspose(*Q);
+}
+
+double in[][3] = {
+	{ 12, -51,   4},
+	{  6, 167, -68},
+	{ -4,  24, -41},
+	{ -1, 1, 0},
+	{ 2, 0, 3},
+};
+
 int main() {
-	// assumption is that cols (n) is less than rows (m)
-	size_t dims[2] = {5, 4};
-	double src[5][4] = {{1,2,3,4},{5,5,6,7},{1,4,2,3},{5,3,2,1},{8,1,2,2}};
-	double std[dims[0]][dims[1]];
-	standardMatrix(dims[0], dims[1], src, std);
-	size_t newDim = 4;
-	double dest[newDim][newDim];
-	covarianceMatrix(dims[0], dims[1], std, dest);
-	puts("covariance matrix:");
-	printMat(newDim, newDim, dest);
-	puts("QR algorithm:");
-
+	matrix R, Q;
+	matrix x = matrixCopy(3, in, 5);
+	householder(x, &R, &Q);
+ 
+	puts("Q"); matrixShow(Q);
+	puts("R"); matrixShow(R);
+ 
+	// to show their product is the input matrix
+	matrix mat = matrixMultiply(Q, R);
+	puts("Q * R"); matrixShow(mat);
+ 
+	matrixDelete(x);
+	matrixDelete(R);
+	matrixDelete(Q);
+	matrixDelete(mat);
+	return 0;
 }
