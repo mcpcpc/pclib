@@ -181,14 +181,17 @@ double in[][3] = {
 int main() {
 	matrix R, Q;
 	matrix x = matrixCopy(3, in, 5);
-	householder(x, &R, &Q);
+	householderTransform(x, &R, &Q);
  
-	puts("Q"); matrixShow(Q);
-	puts("R"); matrixShow(R);
+	puts("Q");
+	matrixShow(Q);
+	puts("R");
+	matrixShow(R);
  
 	// to show their product is the input matrix
 	matrix mat = matrixMultiply(Q, R);
-	puts("Q * R"); matrixShow(mat);
+	puts("Q * R"); 
+	matrixShow(mat);
  
 	matrixDelete(x);
 	matrixDelete(R);
