@@ -8,7 +8,7 @@ typedef struct {
 	double ** v;
 } mat_t, *mat;
 
-mat matrixAdd(int m, int n) {
+mat matrixAllocate(int m, int n) {
 	mat x = malloc(sizeof(mat_t));
 	x->v = malloc(sizeof(double*) * m);
 	x->v[0] = calloc(sizeof(double), m * n);
@@ -46,7 +46,7 @@ double matrixStdDevP(mat m, int dim) {
 }
 
 mat matrixStandardize(mat x) {
-	mat m = matrixAdd(x->m, x->n);
+	mat m = matrixAllocate(x->m, x->n);
 	double mean = 0;
 	double sdev = 0;
 	for (int i = 0; i < m->m; i++) {
@@ -71,7 +71,7 @@ double matrixCovariance(mat m, int x, int y) {
 }
 
 mat covarianceMatrix(mat x) {
-	mat m = matrixAdd(x->m, x->n);
+	mat m = matrixAllocate(x->n, x->n);
 	for (int i = 0; i < m->n; i++) {
 		for (int j = i; j < m->n; j++) {
 			m->v[i][j] = matrixCovariance(x, i, j);
@@ -92,7 +92,7 @@ void matrixTranspose(mat m) {
 }
 
 mat matrixCopy(int n, double a[][n], int m) {
-	mat x = matrixAdd(m, n);
+	mat x = matrixAllocate(m, n);
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
 			x->v[i][j] = a[i][j];
@@ -103,7 +103,7 @@ mat matrixCopy(int n, double a[][n], int m) {
 
 mat matrixMultiply(mat x, mat y) {
 	if (x->n != y->m) return 0;
-	mat r = matrixAdd(x->m, y->n);
+	mat r = matrixAllocate(x->m, y->n);
 	for (int i = 0; i < x->m; i++) {
 		for (int j = 0; j < y->n; j++) {
 			for (int k = 0; k < x->n; k++) {
@@ -115,7 +115,7 @@ mat matrixMultiply(mat x, mat y) {
 }
 
 mat matrixMinor(mat x, int d) {
-	mat m = matrixAdd(x->m, x->n);
+	mat m = matrixAllocate(x->m, x->n);
 	for (int i = 0; i < d; i++) {
 		m->v[i][i] = 1;
 	}
@@ -137,7 +137,7 @@ double *vmadd(double a[], double b[], double s, double c[], int n) {
 
 /* m = I - v v^T */
 mat vmul(double v[], int n) {
-	mat x = matrixAdd(n, n);
+	mat x = matrixAllocate(n, n);
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
 			x->v[i][j] = -2 *  v[i] * v[j];
@@ -229,6 +229,39 @@ void householderTransform(mat m, mat *R, mat *Q) {
 	matrixTranspose(*Q);
 }
 
+/* matrix of diagonal ones */
+mat matrixEye(int m) {
+	mat x = matrixAllocate(m, m);
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < m; j++) {
+			if (i == j) {
+				x->v[i][j] = 1;
+			} else {
+				x->v[i][j] = 0;
+			}
+		}
+	}
+	return x;
+}
+
+/* Ak+1 = Rk * Qk */
+mat eigenValues(mat m, int k) {
+	mat Q, R;
+	householderTransform(m, &R, &Q);
+	mat A = matrixMultiply(R, Q);
+	mat pQ = matrixEye(m->m);
+	pQ = matrixMultiply(pQ, Q);
+	for (int i = 1; i < k; i++) {
+		householderTransform(A, &R, &Q);
+		pQ = matrixMultiply(pQ, Q);
+		A = matrixMultiply(R, Q);
+	}
+	matrixDelete(Q);
+	matrixDelete(R);
+	matrixDelete(A);
+	return pQ;
+}
+
 double in[][3] = {
 	{ 12, -51,   4},
 	{  6, 167, -68},
@@ -237,33 +270,44 @@ double in[][3] = {
 	{ 2, 0, 3},
 };
 
+int n_components = 2;
+
+double src[][4] = {{1,2,3,4},{5,5,6,7},{1,4,2,3},{5,3,2,1},{8,1,2,2}};
 int main() {
 	/* covariance matrix */
-	mat a = matrixCopy(3, in, 5);
+	mat x = matrixCopy(4,src, 5);
+	//mat x = matrixCopy(3, in, 5);
 	puts("IN");
-	matrixPrint(a);
-	mat b = matrixStandardize(a);
+	matrixPrint(x);
+	mat b = matrixStandardize(x);
 	mat c = covarianceMatrix(b);
-	puts("COV. MATRIX");
-	matrixPrint(c);
-	matrixDelete(a);
-	matrixDelete(b);
-	matrixDelete(c);
+	//puts("COV. MATRIX");
+	//matrixPrint(c);
 
 	/* QR decompose */
-	mat R, Q;
-	mat x = matrixCopy(3, in, 5);
-	householderTransform(x, &R, &Q);
-	puts("Q");
-	matrixPrint(Q);
-	puts("R");
-	matrixPrint(R);
-	mat m = matrixMultiply(Q, R);
-	puts("Q * R");
-	matrixPrint(m);
+	//mat R, Q;
+	//householderTransform(c, &R, &Q);
+	//puts("Q");
+	//matrixPrint(Q);
+	//puts("R");
+	//matrixPrint(R);
+	//mat m = matrixMultiply(Q, R);
+	//puts("Q * R");
+	//matrixPrint(m);
+
+	/* eigen values */
+	mat eigen = eigenValues(c, 100);
+	puts("EIGENVALUES");
+	matrixPrint(eigen);
+
+	/* get n components and compute pcs */
+
+	matrixDelete(eigen);
 	matrixDelete(x);
-	matrixDelete(R);
-	matrixDelete(Q);
-	matrixDelete(m);
+	matrixDelete(b);
+	matrixDelete(c);
+	//matrixDelete(R);
+	//matrixDelete(Q);
+	//matrixDelete(m);
 	return 0;
 }
