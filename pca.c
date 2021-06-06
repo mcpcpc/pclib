@@ -20,7 +20,7 @@ mat matrixAllocate(int m, int n) {
 	return x;
 }
 
-void matrixDelete(mat m) {
+void matrixFree(mat m) {
 	free(m->v[0]);
 	free(m->v);
 	free(m);
@@ -136,7 +136,7 @@ double *vmadd(double a[], double b[], double s, double c[], int n) {
 }
 
 /* m = I - v v^T */
-mat vmul(double v[], int n) {
+mat vectorMultiply(double v[], int n) {
 	mat x = matrixAllocate(n, n);
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
@@ -159,7 +159,7 @@ double vnorm(double x[], int n) {
 }
 
 /* y = x / d */
-double *vdiv(double x[], double d, double y[], int n) {
+double *vectorDivide(double x[], double d, double y[], int n) {
 	for (int i = 0; i < n; i++) {
 		y[i] = x[i] / d;
 	}
@@ -184,14 +184,14 @@ void matrixPrint(mat m) {
 	printf("\n");
 }
 
-void householderTransform(mat m, mat *R, mat *Q) {
+void matrixHouseholder(mat m, mat *R, mat *Q) {
 	mat q[m->m];
 	mat z = m, z1;
 	for (int k = 0; k < m->n && k < m->m - 1; k++) {
 		double e[m->m], x[m->m], a;
 		z1 = matrixMinor(z, k);
 		if (z != m) {
-			matrixDelete(z);
+			matrixFree(z);
 		}
 		z = z1;
 		mcol(z, x, k);
@@ -203,28 +203,28 @@ void householderTransform(mat m, mat *R, mat *Q) {
 			e[i] = (i == k) ? 1 : 0;
 		}
 		vmadd(x, e, a, e, m->m);
-		vdiv(e, vnorm(e, m->m), e, m->m);
-		q[k] = vmul(e, m->m);
+		vectorDivide(e, vnorm(e, m->m), e, m->m);
+		q[k] = vectorMultiply(e, m->m);
 		z1 = matrixMultiply(q[k], z);
 		if (z != m) {
-			matrixDelete(z);
+			matrixFree(z);
 		}
 		z = z1;
 	}
-	matrixDelete(z);
+	matrixFree(z);
 	*Q = q[0];
 	*R = matrixMultiply(q[0], m);
 	for (int i = 1; i < m->n && i < m->m - 1; i++) {
 		z1 = matrixMultiply(q[i], *Q);
 		if (i > 1) {
-			matrixDelete(*Q);
+			matrixFree(*Q);
 		}
 		*Q = z1;
-		matrixDelete(q[i]);
+		matrixFree(q[i]);
 	}
-	matrixDelete(q[0]);
+	matrixFree(q[0]);
 	z = matrixMultiply(*Q, m);
-	matrixDelete(*R);
+	matrixFree(*R);
 	*R = z;
 	matrixTranspose(*Q);
 }
@@ -247,18 +247,18 @@ mat matrixEye(int m) {
 /* Ak+1 = Rk * Qk */
 mat eigenValues(mat m, int k) {
 	mat Q, R;
-	householderTransform(m, &R, &Q);
+	matrixHouseholder(m, &R, &Q);
 	mat A = matrixMultiply(R, Q);
 	mat pQ = matrixEye(m->m);
 	pQ = matrixMultiply(pQ, Q);
 	for (int i = 1; i < k; i++) {
-		householderTransform(A, &R, &Q);
+		matrixHouseholder(A, &R, &Q);
 		pQ = matrixMultiply(pQ, Q);
 		A = matrixMultiply(R, Q);
 	}
-	matrixDelete(Q);
-	matrixDelete(R);
-	matrixDelete(A);
+	matrixFree(Q);
+	matrixFree(R);
+	matrixFree(A);
 	return pQ;
 }
 
@@ -284,26 +284,17 @@ int main() {
 	matrixPrint(x);
 	mat b = matrixStandardize(x);
 	mat c = covarianceMatrix(b);
-
-	/* eigen values */
 	mat eigen = eigenValues(c, 100);
-	puts("EIGENVALUES");
-	matrixPrint(eigen);
-
-	/* get n components */
 	mat s = matrixExtract(eigen, 0, eigen->m, 0, n_components);
-	puts("EIGENVALUES (SUB)");
-	matrixPrint(s);
-
-	/* compute principal components */
 	mat pc = matrixMultiply(b, s);
 	puts("PRINCIPAL COMPONENTS");
 	matrixPrint(pc);
 
-	matrixDelete(s);
-	matrixDelete(eigen);
-	matrixDelete(x);
-	matrixDelete(b);
-	matrixDelete(c);
+	matrixFree(s);
+	matrixFree(pc);
+	matrixFree(eigen);
+	matrixFree(x);
+	matrixFree(b);
+	matrixFree(c);
 	return 0;
 }
