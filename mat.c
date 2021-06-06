@@ -262,52 +262,48 @@ mat eigenValues(mat m, int k) {
 	return pQ;
 }
 
-double in[][3] = {
-	{ 12, -51,   4},
-	{  6, 167, -68},
-	{ -4,  24, -41},
-	{ -1, 1, 0},
-	{ 2, 0, 3},
-};
+mat matrixExtract(mat m, int x1, int x2, int y1, int y2) {
+	int mNew = x2 - x1;
+	int nNew = y2 - y1;
+	mat x = matrixAllocate(mNew, nNew);
+	for (int i = 0; i < mNew; i++) {
+		for (int j = 0; j < nNew; j++) {
+			x->v[i][j] = m->v[x1 + i][y1 + j];
+		}
+	}
+	return x;
+}
 
 int n_components = 2;
-
 double src[][4] = {{1,2,3,4},{5,5,6,7},{1,4,2,3},{5,3,2,1},{8,1,2,2}};
+
 int main() {
 	/* covariance matrix */
 	mat x = matrixCopy(4,src, 5);
-	//mat x = matrixCopy(3, in, 5);
 	puts("IN");
 	matrixPrint(x);
 	mat b = matrixStandardize(x);
 	mat c = covarianceMatrix(b);
-	//puts("COV. MATRIX");
-	//matrixPrint(c);
-
-	/* QR decompose */
-	//mat R, Q;
-	//householderTransform(c, &R, &Q);
-	//puts("Q");
-	//matrixPrint(Q);
-	//puts("R");
-	//matrixPrint(R);
-	//mat m = matrixMultiply(Q, R);
-	//puts("Q * R");
-	//matrixPrint(m);
 
 	/* eigen values */
 	mat eigen = eigenValues(c, 100);
 	puts("EIGENVALUES");
 	matrixPrint(eigen);
 
-	/* get n components and compute pcs */
+	/* get n components */
+	mat s = matrixExtract(eigen, 0, eigen->m, 0, n_components);
+	puts("EIGENVALUES (SUB)");
+	matrixPrint(s);
 
+	/* compute principal components */
+	mat pc = matrixMultiply(b, s);
+	puts("PRINCIPAL COMPONENTS");
+	matrixPrint(pc);
+
+	matrixDelete(s);
 	matrixDelete(eigen);
 	matrixDelete(x);
 	matrixDelete(b);
 	matrixDelete(c);
-	//matrixDelete(R);
-	//matrixDelete(Q);
-	//matrixDelete(m);
 	return 0;
 }
