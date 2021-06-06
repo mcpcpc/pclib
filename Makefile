@@ -6,17 +6,17 @@ PREFIX = /usr/local
 LDLIBS = -lm
 BINDIR = $(PREFIX)/bin
 
-all: mat
+all: pca
 install: all
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp -f pca $(DESTDIR)$(BINDIR)
-	chmod 755 $(DESTDIR)$(BINDIR)/mat
-mat: mat.o
-	$(CC) $(ALL_LDFLAGS) -o mat mat.o $(LDLIBS)
-mat.o: mat.c
-	$(CC) $(ALL_CFLAGS) -c mat.c
+	chmod 755 $(DESTDIR)$(BINDIR)/pca
+pca: pca.o
+	$(CC) $(ALL_LDFLAGS) -o pca pca.o $(LDLIBS)
+pca.o: pca.c
+	$(CC) $(ALL_CFLAGS) -c pca.c
 clean:
-	rm -f mat *.o
+	rm -f pca *.o
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/mat
+	rm -f $(DESTDIR)$(BINDIR)/pca
 .PHONY: all install uninstall clean
